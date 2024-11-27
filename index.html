@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>网课进度查询</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #f6f9fc, #eef2f7);
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1),
+                        0 1px 8px rgba(0, 0, 0, 0.02);
+            text-align: center;
+            max-width: 90%;
+            width: 400px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12),
+                        0 1px 10px rgba(0, 0, 0, 0.04);
+        }
+
+        .logo {
+            font-size: 3rem;
+            color: #2c3e50;
+            margin-bottom: 1.5rem;
+            animation: floatAnimation 3s ease-in-out infinite;
+            display: inline-block;
+            transform-origin: center;
+            will-change: transform;
+        }
+
+        @keyframes floatAnimation {
+            0% {
+                transform: translateY(0) rotate(0deg);
+            }
+            50% {
+                transform: translateY(-10px) rotate(5deg);
+            }
+            100% {
+                transform: translateY(0) rotate(0deg);
+            }
+        }
+
+        h2 {
+            color: #1a202c;
+            margin-bottom: 2rem;
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        input {
+            width: 100%;
+            padding: 15px 20px;
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            color: #2d3748;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        input::placeholder {
+            color: #a0aec0;
+        }
+
+        input:focus {
+            border-color: #4299e1;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15);
+        }
+
+        button {
+            background: linear-gradient(45deg, #4299e1, #48bb78);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 100%;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(66, 153, 225, 0.2);
+            background: linear-gradient(45deg, #48bb78, #4299e1);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .background-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(45deg, #ffffff, #f5f7fa);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 1.5rem;
+                margin: 1rem;
+                width: calc(100% - 2rem);
+            }
+
+            h2 {
+                font-size: 1.5rem;
+            }
+        }
+
+        .notice-section {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #f8fafc, #edf2f7);
+            border-radius: 16px;
+            text-align: left;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
+        }
+
+        .notice-title {
+            color: #2d3748;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .notice-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .notice-item {
+            color: #4a5568;
+            font-size: 0.95rem;
+            margin-bottom: 0.8rem;
+            padding-left: 1.5rem;
+            position: relative;
+            line-height: 1.6;
+        }
+
+        .notice-item:before {
+            content: "•";
+            color: #4299e1;
+            position: absolute;
+            left: 0.5rem;
+            font-weight: bold;
+        }
+
+        @media (max-width: 480px) {
+            .notice-item {
+                font-size: 0.85rem;
+            }
+        }
+
+        .contact-section {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .contact-title {
+            color: #2c3e50;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .contact-info {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .contact-item {
+            background: #f8fafc;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            color: #4299e1;
+            font-size: 1.1rem;
+            font-weight: 500;
+            border: 2px solid #edf2f7;
+            transition: all 0.3s ease;
+        }
+
+        .contact-item:hover {
+            background: white;
+            border-color: #4299e1;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(66, 153, 225, 0.1);
+        }
+
+        .contact-divider {
+            color: #64748b;
+            font-size: 0.9rem;
+            margin: 0.5rem 0;
+        }
+
+        .qq-info {
+            color: #e74c3c;  /* QQ的颜色稍微区分一下 */
+        }
+
+        .contact-note {
+            color: #718096;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+        }
+
+        .result-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .result-container.show {
+            display: block;
+        }
+
+        .result-frame {
+            width: 100%;
+            height: calc(100% - 55px);
+            border: none;
+            margin: 0;
+            padding: 0;
+            display: block;
+        }
+
+        .back-button {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: #3498db;
+            color: white;
+            padding: 15px 0;
+            cursor: pointer;
+            z-index: 1001;
+            border: none;
+            font-weight: 600;
+            display: none;
+            transform: none;
+            border-radius: 0;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .back-button.show {
+            display: block;
+        }
+
+        .back-button:hover {
+            background: #2980b9;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 1.5rem;
+                margin: 1rem;
+                width: calc(100% - 2rem);
+            }
+
+            .result-container {
+                padding: 0;
+            }
+
+            .back-button {
+                bottom: 30px;
+                padding: 15px 30px;
+                font-size: 1rem;
+            }
+        }
+
+        .loading-spinner {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1002;
+        }
+
+        .loading-spinner.show {
+            display: block;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 优化后的 Modal 样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            z-index: 1003;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: all 0.3s ease-out;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal.show {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: linear-gradient(145deg, #ffffff, #f0f4f8);
+            padding: 35px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 85%;
+            width: 400px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+            animation: modalSlideIn 0.4s ease-out;
+            transform: scale(0.95);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-content:hover {
+            transform: scale(1);
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                transform: translateY(-30px) scale(0.9);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0) scale(0.95);
+                opacity: 1;
+            }
+        }
+
+        .modal-content p {
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+            color: #2d3748;
+            line-height: 1.6;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        .modal-content p:first-child {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .modal-close {
+            background: linear-gradient(45deg, #4299e1, #48bb78);
+            color: white;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .modal-close:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(66, 153, 225, 0.2);
+            background: linear-gradient(45deg, #48bb78, #4299e1);
+        }
+
+        .modal-close:active {
+            transform: translateY(0);
+        }
+
+        /* 添加点击波纹效果 */
+        .modal-close::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%);
+            transform-origin: 50% 50%;
+        }
+
+        .modal-close:focus:not(:active)::after {
+            animation: ripple 1s ease-out;
+        }
+
+        @keyframes ripple {
+            0% {
+                transform: scale(0, 0);
+                opacity: 0.5;
+            }
+            20% {
+                transform: scale(25, 25);
+                opacity: 0.3;
+            }
+            100% {
+                opacity: 0;
+                transform: scale(40, 40);
+            }
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 480px) {
+            .modal-content {
+                padding: 25px;
+                max-width: 90%;
+                margin: 20px;
+                animation: mobileModalSlideIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            }
+
+            @keyframes mobileModalSlideIn {
+                0% {
+                    transform: translateY(100%) scale(0.8);
+                    opacity: 0;
+                }
+                60% {
+                    transform: translateY(-5%) scale(0.95);
+                }
+                100% {
+                    transform: translateY(0) scale(0.95);
+                    opacity: 1;
+                }
+            }
+
+            .modal-content:hover {
+                transform: scale(0.98);
+            }
+
+            .modal-content p {
+                font-size: 1rem;
+                transform: translateY(20px);
+                opacity: 0;
+                animation: textSlideUp 0.4s forwards;
+            }
+
+            .modal-content p:nth-child(1) { animation-delay: 0.1s; }
+            .modal-content p:nth-child(2) { animation-delay: 0.2s; }
+            .modal-content p:nth-child(3) { animation-delay: 0.3s; }
+
+            @keyframes textSlideUp {
+                from {
+                    transform: translateY(20px);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+            }
+
+            .modal-close {
+                padding: 12px 24px;
+                width: 90%;
+                margin-top: 15px;
+                transform: translateY(20px);
+                opacity: 0;
+                animation: buttonFadeIn 0.4s 0.4s forwards;
+                background: linear-gradient(45deg, #4299e1, #48bb78);
+                border-radius: 12px;
+                font-weight: 600;
+            }
+
+            @keyframes buttonFadeIn {
+                from {
+                    transform: translateY(20px);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+            }
+
+            .modal-close:active {
+                transform: scale(0.95);
+                background: linear-gradient(45deg, #48bb78, #4299e1);
+            }
+
+            /* 优化波纹效果 */
+            .modal-close::after {
+                content: '';
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                width: 100%;
+                height: 100%;
+                background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 60%);
+                transform: translate(-50%, -50%) scale(0);
+                transition: transform 0.5s;
+            }
+
+            .modal-close:active::after {
+                transform: translate(-50%, -50%) scale(2);
+                opacity: 0;
+            }
+        }
+
+        /* 优化模态框背景 */
+        .modal {
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+
+        .modal.show {
+            animation: modalFadeIn 0.3s forwards;
+        }
+
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                backdrop-filter: blur(0px);
+                -webkit-backdrop-filter: blur(0px);
+            }
+            to {
+                opacity: 1;
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
+            }
+        }
+
+        .sticker {
+            position: absolute;
+            top: -30px;
+            right: -30px;
+            width: 60px;
+            height: 60px;
+        }
+
+        .heart {
+            display: inline-block;
+        }
+
+        .heart-left {
+            transform: rotate(-15deg); /* 左边爱心旋转 */
+        }
+
+        .heart-right {
+            transform: rotate(15deg); /* 右边爱心旋转 */
+        }
+
+        /* 移动端特定的动画样式 */
+        @media (max-width: 480px) {
+            .logo {
+                font-size: 2.5rem;
+                animation: mobileFloatAnimation 3s ease-in-out infinite;
+            }
+
+            @keyframes mobileFloatAnimation {
+                0% {
+                    transform: translateY(0) rotate(0deg) scale(1);
+                }
+                50% {
+                    transform: translateY(-8px) rotate(8deg) scale(1.1);
+                }
+                100% {
+                    transform: translateY(0) rotate(0deg) scale(1);
+                }
+            }
+
+            .container {
+                padding: 1.5rem;
+                margin: 1rem;
+                width: calc(100% - 2rem);
+            }
+
+            h2 {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* 添加触摸设备的交互效果 */
+        @media (hover: none) {
+            .logo:active {
+                animation-play-state: paused;
+                transform: scale(1.1);
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="background-animation"></div>
+    <div class="container">
+        <div class="logo">🎓</div>
+        <h2>网课进度查询</h2>
+        <div class="input-group">
+            <input type="text" id="queryId" placeholder="请输入手机号查询" autocomplete="off">
+        </div>
+        <button onclick="query()">查询进度</button>
+
+        <div id="resultContainer" class="result-container">
+            <iframe id="resultFrame" class="result-frame" frameborder="0"></iframe>
+        </div>
+        <button id="backButton" class="back-button" onclick="goBack()">返回查询</button>
+
+        <div class="notice-section">
+            <div class="notice-title">注意事项</div>
+            <ul class="notice-list">
+                <li class="notice-item">请使用下单时的手机号进行查询</li>
+                <li class="notice-item">如遇查询问题，请联系客服处理</li>
+                <li class="notice-item">系统每10分钟更新一次学习进度</li>
+                <li class="notice-item">请确保手机号输入正确，否则将无法查询</li>
+                <li class="notice-item">点击查询进度如果短暂白屏属于正常现象，稍等片刻即可</li>
+            </ul>
+        </div>
+
+        <div class="contact-section">
+            <div class="contact-title">
+                <span>📱 客服微信</span>
+            </div>
+            <div class="contact-info">
+                <div class="contact-item">zc-99o</div>
+            </div>
+            <div class="contact-note">工作时间：周一至周日 8:00-24:00</div>
+        </div>
+    </div>
+
+    <div id="loadingSpinner" class="loading-spinner">
+        <div class="spinner"></div>
+    </div>
+
+    <div id="infoModal" class="modal">
+        <div class="modal-content">
+            <p>查询不到就是没有下单哦亲亲~</p>
+            <p>如果有疑问联系客服微信。</p>
+            <p>出现空白属于正常现象，耐心等待几秒钟，谢谢配合。</p>
+            <p style="color: #e74c3c;">服务器爆满，建议使用电脑端查询。</p>
+            <button class="modal-close" onclick="closeModal()">我知道了</button>
+        </div>
+    </div>
+
+    <script>
+        // 缓存查询结果
+        const queryCache = new Map();
+        let currentQuery = '';
+        let iframeLoaded = false;
+        let timeout = null;
+
+        // 预加载 iframe
+        const resultFrame = document.getElementById('resultFrame');
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('infoModal');
+            modal.classList.add('show');
+
+            const queryIdInput = document.getElementById('queryId');
+
+            // 优化输入事件处理
+            queryIdInput.addEventListener('input', debounce(function(e) {
+                const value = e.target.value.trim();
+                validateInput(value);
+            }, 300));
+
+            // 添加回车键查询
+            queryIdInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    query();
+                }
+            });
+        });
+
+        // 防抖函数
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // 验证输入
+        function validateInput(value) {
+            const input = document.getElementById('queryId');
+            if (value && !/^1[3-9]\d{9}$/.test(value)) {
+                input.style.borderColor = '#e74c3c';
+                return false;
+            }
+            input.style.borderColor = '#edf2f7';
+            return true;
+        }
+
+        // 查询函数优化
+        async function query() {
+            const queryId = document.getElementById('queryId').value.trim();
+            
+            if (!queryId || !validateInput(queryId)) {
+                alert('请输入正确的手机号');
+                return;
+            }
+
+            // 检查缓存
+            if (queryCache.has(queryId)) {
+                showCachedResult(queryId);
+                return;
+            }
+
+            showLoading();
+            
+            try {
+                currentQuery = queryId;
+                resultFrame.src = `https://b.pengzi.cc/query/?user=${queryId}`;
+                
+                resultFrame.onload = function() {
+                    if (currentQuery === queryId) {
+                        hideLoading();
+                        iframeLoaded = true;
+                        // 缓存结果
+                        queryCache.set(queryId, resultFrame.src);
+                    }
+                };
+
+                document.body.style.overflow = 'hidden';
+            } catch (error) {
+                hideLoading();
+                alert('查询失败，请稍后重试');
+            }
+        }
+
+        // 显示缓存的结果
+        function showCachedResult(queryId) {
+            showLoading();
+            resultFrame.src = queryCache.get(queryId);
+            resultFrame.onload = function() {
+                hideLoading();
+                iframeLoaded = true;
+            };
+            document.body.style.overflow = 'hidden';
+        }
+
+        // 显示加载状态
+        function showLoading() {
+            document.getElementById('loadingSpinner').classList.add('show');
+            document.getElementById('resultContainer').classList.add('show');
+            document.getElementById('backButton').classList.add('show');
+        }
+
+        // 隐藏加载状态
+        function hideLoading() {
+            document.getElementById('loadingSpinner').classList.remove('show');
+        }
+
+        // 返回函数优化
+        function goBack() {
+            document.getElementById('resultContainer').classList.remove('show');
+            document.getElementById('backButton').classList.remove('show');
+            document.getElementById('loadingSpinner').classList.remove('show');
+
+            if (iframeLoaded) {
+                resultFrame.style.visibility = 'hidden';
+            }
+
+            document.body.style.overflow = 'auto';
+        }
+
+        function closeModal() {
+            document.getElementById('infoModal').classList.remove('show');
+        }
+    </script>
+</body>
+</html> 
